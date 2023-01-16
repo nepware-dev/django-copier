@@ -1,0 +1,37 @@
+name: Test Copier file
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_OUTPUT_DIRECTORY: "../copier_output"
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.3.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction
+      - name: Generate template
+        run: |
+          poetry run copier --defaults . $DJANGO_OUTPUT_DIRECTORY
+      - name: Test django output
+        run: |
+          cd $DJANGO_OUTPUT_DIRECTORY
+          poetry install --no-interaction
+          poetry run ./manage.py test -v 3
