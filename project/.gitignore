@@ -1,0 +1,19 @@
+# Python related
+.venv/
+__pycache__/
+*.pyc
+
+# Django related
+media/
+static/
+*.sqlite3
+.env
+
+# IDE related
+.vscode/
+
+# docker related
+docker-compose.yml
+docker-compose.yaml
+external-services.yml
+external-services.yaml
