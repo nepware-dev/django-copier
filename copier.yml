@@ -2,6 +2,14 @@ project_name:
   type: str
   help: What is your project name?
   default: copier_output
+github_organization_name:
+  type: str
+  help: What is your project GitHub organization name?
+  default: nepware-dev
+github_repo_name:
+  type: str
+  help: What is your project GitHub repo name?
+  default: "{{project_name}}-server"
 
 _min_copier_version: "7"
 _subdirectory: project
