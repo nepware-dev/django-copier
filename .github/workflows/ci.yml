@@ -30,8 +30,16 @@ jobs:
       - name: Generate template
         run: |
           poetry run copier --defaults . $DJANGO_OUTPUT_DIRECTORY
+      - name: Create django .env file
+        uses: iamsauravsharma/create-dotenv@v1.2.2
+        with:
+          env-prefix: 'ENV_'
+          directory: ${{ env.DJANGO_OUTPUT_DIRECTORY }}
+        env:
+          ENV_SERVER_ENVIRONMENT: development
+          ENV_DATABASE_URL: sqlite:///db.sqlite3
       - name: Test django output
         run: |
           cd $DJANGO_OUTPUT_DIRECTORY
-          poetry install --no-interaction
+          poetry install --no-interaction --no-root
           poetry run ./manage.py test -v 3
