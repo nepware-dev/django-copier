@@ -27,14 +27,11 @@ ENV POETRY_VERSION=1.3.1 \
 # add poetry home to path
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
-# Install pip
-RUN curl -sSL https://bootstrap.pypa.io/get-pip.py | python
-
 # install virtualenv
 RUN pip install -U virtualenv
 
 # Install Poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python
+RUN curl -sSL https://install.python-poetry.org | python
 
 # testing stage
 FROM python-base as testing
