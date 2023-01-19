@@ -37,9 +37,14 @@ jobs:
           directory: ${{ env.DJANGO_OUTPUT_DIRECTORY }}
         env:
           ENV_SERVER_ENVIRONMENT: development
-          ENV_DATABASE_URL: sqlite:///db.sqlite3
-      - name: Test django output
+          ENV_DATABASE_URL: postgis://postgres:postgres@db:5432/postgres
+          ENV_POSTGRES_PASSWORD: postgres
+          ENV_REDIS_PASSWORD: redis
+      - name: Run django test
         run: |
           cd $DJANGO_OUTPUT_DIRECTORY
-          poetry install --no-interaction --no-root
-          poetry run ./manage.py test -v 3
+          docker network create external-services
+          ln -s docker/external_services.yml external_services.yml
+          docker-compose -f external_services.yml up -d
+          ln -s docker/docker-compose.test.yml docker-compose.yml
+          docker-compose up --exit-code-from server
