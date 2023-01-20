@@ -359,3 +359,11 @@ SIMPLE_JWT = {
     "ISSUER": env.str("SIMPLE_JWT_ISSUER", default="{{project_name}}"),
     "REFRESH_TOKEN_LIFETIME": timedelta(weeks=1),
 }
+
+# Determination of proper protocol and host
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Path of gdal and geos
+GDAL_LIBRARY_PATH = env.str("GDAL_LIBRARY_PATH", default=None)
+GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH", default=None)
