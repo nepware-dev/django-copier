@@ -1,0 +1,120 @@
+from django.apps import apps
+from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.db import models
+
+from {{project_name}}.tests import FullTestCase
+from {{project_name}}.utils import gen_random_password
+
+
+class TestAdmin(FullTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        user = cls.baker.make(
+            settings.AUTH_USER_MODEL, is_superuser=True, is_staff=True, is_active=True
+        )
+        cls.user_pass = gen_random_password(user=user)
+        user.set_password(cls.user_pass)
+        user.save()
+        cls.user = get_user_model().objects.get(username=user.username)
+
+    def test_admin_changelist_view(self):
+        self.client.login(username=self.user.username, password=self.user_pass)
+        for model, _ in admin.site._registry.items():
+            user = self.create_user()
+            if model == apps.get_model(*settings.AUTH_USER_MODEL.rsplit(".", 1)):
+                self.create_user(_quantity=3)
+            else:
+                kwargs = {}
+                for field in model._meta.fields:
+                    if field.related_model == get_user_model():
+                        if type(field) == models.ManyToManyField:
+                            kwargs[field.name] = [user]
+                        else:
+                            kwargs[field.name] = user
+                self.baker.make(model, **kwargs, _quantity=3)
+            url = self.reverse(
+                f"admin:{model._meta.app_label}_{model._meta.model_name}_changelist"
+            )
+            response = self.client.get(url)
+            self.assertEqual(
+                response.status_code,
+                self.status_code.HTTP_200_OK,
+                f"Test failed for {model._meta.model_name}",
+            )
+
+    def test_admin_add_view(self):
+        self.client.login(username=self.user.username, password=self.user_pass)
+        for model, modeladmin in admin.site._registry.items():
+            url = self.reverse(
+                f"admin:{model._meta.app_label}_{model._meta.model_name}_add"
+            )
+            request = self.factory.get(url)
+            request.user = self.user
+            if modeladmin.has_add_permission(request):
+                response = self.client.get(url)
+                self.assertEqual(
+                    response.status_code,
+                    self.status_code.HTTP_200_OK,
+                    f"Test failed for {model._meta.model_name}",
+                )
+
+    def test_admin_delete_view(self):
+        self.client.login(username=self.user.username, password=self.user_pass)
+        for model, modeladmin in admin.site._registry.items():
+            user = self.create_user()
+            if model == apps.get_model(*settings.AUTH_USER_MODEL.rsplit(".", 1)):
+                object_id = user.id
+            else:
+                kwargs = {}
+                for field in model._meta.fields:
+                    if field.related_model == get_user_model():
+                        if type(field) == models.ManyToManyField:
+                            kwargs[field.name] = [user]
+                        else:
+                            kwargs[field.name] = user
+                object_id = self.baker.make(model, **kwargs).id
+            url = self.reverse(
+                f"admin:{model._meta.app_label}_{model._meta.model_name}_delete",
+                args=(object_id,),
+            )
+            request = self.factory.get(url)
+            request.user = self.user
+            if modeladmin.has_delete_permission(request):
+                response = self.client.get(url)
+                self.assertEqual(
+                    response.status_code,
+                    self.status_code.HTTP_200_OK,
+                    f"Test failed for {model._meta.model_name}",
+                )
+
+    def test_admin_change_view(self):
+        self.client.login(username=self.user.username, password=self.user_pass)
+        for model, modeladmin in admin.site._registry.items():
+            user = self.create_user()
+            if model== apps.get_model(*settings.AUTH_USER_MODEL.rsplit(".", 1)):
+                object_id = user.id
+            else:
+                kwargs = {}
+                for field in model._meta.fields:
+                    if field.related_model == get_user_model():
+                        if type(field) == models.ManyToManyField:
+                            kwargs[field.name] = [user]
+                        else:
+                            kwargs[field.name] = user
+                object_id = self.baker.make(model, **kwargs).id
+            url = self.reverse(
+                f"admin:{model._meta.app_label}_{model._meta.model_name}_change",
+                args=(object_id,),
+            )
+            request = self.factory.get(url)
+            request.user = self.user
+            if modeladmin.has_change_permission(request):
+                response = self.client.get(url)
+                self.assertEqual(
+                    response.status_code,
+                    self.status_code.HTTP_200_OK,
+                    f"Test failed for {model._meta.model_name}",
+                )
