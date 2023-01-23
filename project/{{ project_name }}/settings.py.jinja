@@ -1,4 +1,5 @@
 import importlib
+import os
 
 from datetime import timedelta
 from pathlib import Path
@@ -63,7 +64,7 @@ DJANGO_APPS = [
 ]
 
 # Internal/Local apps
-INTERNAL_APPS = []
+INTERNAL_APPS = ["notification"]
 
 # Third party apps
 THIRD_PARTY_APPS = [
@@ -147,6 +148,8 @@ STATIC_LOCATION = "static"
 MEDIA_LOCATION = "media"
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
