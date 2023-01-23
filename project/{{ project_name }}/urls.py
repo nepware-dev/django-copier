@@ -13,6 +13,8 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
+from notification.views import NotificationViewSet
+
 API_VERSION = "v1"
 
 
@@ -25,6 +27,7 @@ class CustomDefaultRouter(routers.DefaultRouter):
 
 
 router = CustomDefaultRouter()
+router.register("notification", NotificationViewSet, basename="notification")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
