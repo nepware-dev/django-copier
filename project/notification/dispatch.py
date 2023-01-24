@@ -43,18 +43,9 @@ def notification(
     else:
         raise TypeError("Only UserModel or queryset or list of UserModel is supported")
     for user_obj in users:
-        if description is None:
-            extra_content = ""
-            if action_object:
-                extra_content += f" {action_object}"
-            if target:
-                extra_content += f" on {target}"
-            description = f"{actor} {verb}{extra_content}"
-
-        Notification.objects.create(
-            recipient=user_obj,
-            actor_content_object=actor,
-            verb=verb,
+        user.notify(
+            actor,
+            verb,
             description=description,
             notification_type=notification_type,
             timestamp=timestamp,

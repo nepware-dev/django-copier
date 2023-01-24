@@ -1,0 +1,105 @@
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+
+from {{project_name}}.serializers import UserModelSerializer
+
+from .models import User
+
+
+class UserSerializer(UserModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+        )
+
+
+class PrivateUserSerializer(UserSerializer):
+    email = serializers.EmailField(read_only=True)
+    password = serializers.CharField(write_only=True)
+    permissions = serializers.SerializerMethodField(read_only=True)
+
+    class Meta(UserSerializer.Meta):
+        fields = "__all__"
+
+    def validate(self, attrs):
+        password = attrs.pop("password", None)
+        if not password:
+            raise serializers.ValidationError({"password": _("Password field missing")})
+        user = self.context["request"].user
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                {"password": _("Invalid password for user")}
+            )
+        return super().validate(attrs)
+
+    def get_permissions(self, obj):
+        return obj.get_all_permissions()
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()
+    re_new_password = serializers.CharField()
+
+    def validate(self, attrs):
+        password = attrs.get("old_password")
+        user = self.context["request"].user
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                {"old_password": _("Invalid password for user")}
+            )
+        if password == attrs["new_password"]:
+            raise serializers.ValidationError(
+                {"new_password": _("New password cannot be same as old password")}
+            )
+        if attrs["new_password"] != attrs["re_new_password"]:
+            raise serializers.ValidationError(
+                {"error": _("New password and re new password doesn't match")}
+            )
+        return super().validate(attrs)
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    mail_format = serializers.ChoiceField(choices=["reset", "new"], default="reset")
+
+
+class EmailChangeSerializer(serializers.Serializer):
+    new_email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        password = attrs.get("password")
+        new_email = attrs.get("new_email")
+        user = self.context["request"].user
+        if User.objects.filter(email=new_email).exists():
+            raise serializers.ValidationError({"new_email": _("Email is already used")})
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                {"password": _("Invalid password for user")}
+            )
+        return super().validate(attrs)
+
+
+class EmailChangePinVerifySerializer(serializers.Serializer):
+    pin = serializers.IntegerField()
+
+
+class PinVerifySerializer(serializers.Serializer):
+    username = serializers.CharField()
+    pin = serializers.IntegerField()
+
+
+class PasswordResetPasswordChangeSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    identifier = serializers.CharField()
+    password = serializers.CharField()
+    re_password = serializers.CharField()
+
+
+class UploadFileSerializer(serializers.Serializer):
+    file = serializers.FileField()
