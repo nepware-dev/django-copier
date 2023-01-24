@@ -9,6 +9,7 @@ from {{project_name}}.utils import gen_random_number
 
 
 class FullTestCase(APITestCase, APILiveServerTestCase):
+    fixtures = ["notification/content/email.yaml"]
 
     baker = baker
     baker.generators.add("{{ project_name }}.fields.LowerCharField", random_gen.gen_string)

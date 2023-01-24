@@ -14,6 +14,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from notification.views import NotificationViewSet
+from user.views import UserViewSet
 
 API_VERSION = "v1"
 
@@ -28,6 +29,7 @@ class CustomDefaultRouter(routers.DefaultRouter):
 
 router = CustomDefaultRouter()
 router.register("notification", NotificationViewSet, basename="notification")
+router.register("user", UserViewSet, basename="user")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

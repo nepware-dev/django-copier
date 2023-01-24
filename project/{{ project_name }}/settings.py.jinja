@@ -64,7 +64,7 @@ DJANGO_APPS = [
 ]
 
 # Internal/Local apps
-INTERNAL_APPS = ["notification"]
+INTERNAL_APPS = ["notification", "user"]
 
 # Third party apps
 THIRD_PARTY_APPS = [
@@ -153,6 +153,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = "user.User"
 
 # CELERY
 ENABLE_CELERY = env.bool("ENABLE_CELERY", default=True)
