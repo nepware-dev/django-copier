@@ -1,0 +1,38 @@
+name: Lint python application
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.3.1
+        with:
+          version: 1.3.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Setup cache
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: poetry-venv-${{ hashFiles('poetry.lock') }}
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction
+      - name: Lint python projects
+        run: |
+          source .venv/bin/activate
+          black . --check
+          isort . --check-only
+          poetry export -E asgi --without-hashes | safety check --stdin
